@@ -2,6 +2,45 @@
 
 Todas as mudanças notáveis neste projeto serão documentadas neste arquivo.
 
+## [3.0.0] - 2024-11-15
+
+### ✨ Adicionado
+
+#### Análise Quântica Avançada
+
+- **Novo Módulo**: `server/quantum-analytics.ts`
+  - `detectarPontosInflexao()`: Detecta mudanças de tendência
+  - `detectarPicosVales()`: Identifica máximos e mínimos significativos
+  - `identificarCiclos()`: Encontra ciclos de acumulação e distribuição
+  - `calcularMomentum()`: Analisa velocidade, aceleração e momentum
+  - `criarComparativoInvestidores()`: Compara o comportamento dos investidores
+
+- **Novas Rotas tRPC**: 6 novas rotas para análise quântica
+  - `b3.getAnaliseQuantica`: Análise completa
+  - `b3.getPontosInflexao`: Pontos de inflexão
+  - `b3.getPicosVales`: Picos e vales
+  - `b3.getCiclos`: Ciclos de fluxo
+  - `b3.getMomentum`: Análise de momentum
+  - `b3.getComparativoInvestidores`: Comparativo diário
+
+#### Nova Aba: Análise Quântica
+
+- **Momentum e Previsão**: Card com análise de velocidade, aceleração e previsão para os próximos 3 dias
+- **Pontos de Inflexão**: Lista de momentos em que o fluxo mudou de direção
+- **Picos e Vales**: Destaque para máximos e mínimos significativos
+- **Ciclos**: Identificação de períodos de acumulação e distribuição
+
+### 🔄 Modificado
+
+- **DashboardEnhanced.tsx**: Adicionada a nova aba "Análise Quântica"
+- **routers.ts**: Adicionadas as novas rotas de análise quântica
+
+### 🚫 Removido
+
+- **Análise de Divergências**: Completamente removida do projeto
+
+---
+
 ## [2.0.0] - 2024-11-15
 
 ### ✨ Adicionado

@@ -53,6 +53,8 @@ export default function DashboardEnhanced() {
   const { data: tendenciasPeriodo } = trpc.b3.getTendenciasPeriodo.useQuery();
   const { data: padroes } = trpc.b3.getPadroes.useQuery();
   const { data: alertasMovimento } = trpc.b3.getAlertasMovimento.useQuery();
+  const { data: analiseQuantica } = trpc.b3.getAnaliseQuantica.useQuery();
+  const { data: momentum } = trpc.b3.getMomentum.useQuery();
   const clearDataMutation = trpc.b3.clearData.useMutation();
 
   const tiposInvestidores = useMemo(() => {
@@ -426,9 +428,10 @@ export default function DashboardEnhanced() {
 
         {/* Tabs de Visualizações */}
         <Tabs defaultValue="fluxo" className="space-y-4">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="fluxo">Fluxo Diário</TabsTrigger>
             <TabsTrigger value="tendencias">Tendências</TabsTrigger>
+            <TabsTrigger value="quantica">Análise Quântica</TabsTrigger>
             <TabsTrigger value="padroes">Padrões</TabsTrigger>
             <TabsTrigger value="comparativo">Comparativo</TabsTrigger>
           </TabsList>
@@ -448,6 +451,232 @@ export default function DashboardEnhanced() {
                     <Bar data={fluxoChartData} options={fluxoChartOptions} />
                   )}
                 </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Aba: Análise Quântica */}
+          <TabsContent value="quantica" className="space-y-4">
+            {/* Momentum e Previsão */}
+            <Card className="border-2 border-purple-200 dark:border-purple-900">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Zap className="h-5 w-5 text-purple-600" />
+                  Momentum e Previsão de Curto Prazo
+                </CardTitle>
+                <CardDescription>
+                  Análise de velocidade, aceleração e previsão para os próximos 3 dias
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {momentum && momentum.length > 0 ? (
+                  <div className="grid gap-4 md:grid-cols-2">
+                    {momentum.map((m, idx) => (
+                      <div key={idx} className="p-4 rounded-lg border-2 bg-gradient-to-br from-purple-50 to-blue-50 dark:from-purple-950 dark:to-blue-950">
+                        <div className="flex items-center justify-between mb-3">
+                          <h4 className="font-semibold text-lg">{m.tipoInvestidor}</h4>
+                          <Badge variant={m.previsaoProximos3Dias === 'ALTA' ? 'default' : m.previsaoProximos3Dias === 'BAIXA' ? 'destructive' : 'secondary'}>
+                            {m.previsaoProximos3Dias}
+                          </Badge>
+                        </div>
+                        <div className="space-y-2 text-sm">
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">Momentum:</span>
+                            <span className={`font-semibold ${m.momentumAtual >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                              R$ {(m.momentumAtual / 1000).toFixed(2)}bi
+                            </span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">Velocidade:</span>
+                            <span className={`font-semibold ${m.velocidade >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                              {m.velocidade >= 0 ? '+' : ''}{(m.velocidade / 1000).toFixed(2)}bi/dia
+                            </span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">Direção:</span>
+                            <span className="font-semibold">{m.direcao.replace(/_/g, ' ')}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">Força Tendência:</span>
+                            <span className="font-semibold">{m.forcaTendencia.toFixed(0)}%</span>
+                          </div>
+                          <div className="flex justify-between pt-2 border-t">
+                            <span className="text-muted-foreground">Confiança Previsão:</span>
+                            <span className="font-semibold text-purple-600">{m.confiancaPrevisao.toFixed(0)}%</span>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-8 text-muted-foreground">
+                    Dados insuficientes para cálculo de momentum
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Pontos de Inflexão */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Target className="h-5 w-5 text-orange-600" />
+                  Pontos de Inflexão (Mudanças de Tendência)
+                </CardTitle>
+                <CardDescription>
+                  Momentos em que o fluxo mudou de direção significativamente
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {analiseQuantica?.pontosInflexao && analiseQuantica.pontosInflexao.length > 0 ? (
+                  <div className="space-y-3">
+                    {analiseQuantica.pontosInflexao.slice(0, 10).map((ponto, idx) => (
+                      <div key={idx} className="p-4 rounded-lg border-l-4 border-l-orange-500 bg-orange-50 dark:bg-orange-950">
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-1">
+                              <span className="font-semibold">
+                                {new Date(ponto.data).toLocaleDateString('pt-BR')}
+                              </span>
+                              <Badge variant="outline">{ponto.tipoInvestidor}</Badge>
+                            </div>
+                            <p className="text-sm font-semibold mb-1">
+                              {ponto.tipo.replace(/_/g, ' ')}
+                            </p>
+                            <p className="text-sm text-muted-foreground">
+                              De R$ {(ponto.fluxoAnterior / 1000).toFixed(2)}bi para R$ {(ponto.fluxoAtual / 1000).toFixed(2)}bi
+                              ({ponto.variacao >= 0 ? '+' : ''}{ponto.variacao.toFixed(1)}%)
+                            </p>
+                            <p className="text-xs text-muted-foreground mt-1">
+                              Após {ponto.diasAcumulados} dias na tendência anterior
+                            </p>
+                          </div>
+                          <div className="text-right">
+                            <div className="text-xs text-muted-foreground">Intensidade</div>
+                            <div className="text-2xl font-bold text-orange-600">{ponto.intensidade.toFixed(0)}%</div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-8 text-muted-foreground">
+                    Nenhum ponto de inflexão detectado no período
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Picos e Vales */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Activity className="h-5 w-5 text-blue-600" />
+                  Picos e Vales de Fluxo
+                </CardTitle>
+                <CardDescription>
+                  Máximos e mínimos significativos no fluxo de capital
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {analiseQuantica?.picosVales && analiseQuantica.picosVales.length > 0 ? (
+                  <div className="grid gap-3 md:grid-cols-2">
+                    {analiseQuantica.picosVales.slice(0, 8).map((pv, idx) => (
+                      <div
+                        key={idx}
+                        className={`p-4 rounded-lg border-2 ${
+                          pv.tipo.includes('PICO') 
+                            ? 'bg-green-50 dark:bg-green-950 border-green-500' 
+                            : 'bg-red-50 dark:bg-red-950 border-red-500'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between mb-2">
+                          <div>
+                            <span className="text-sm font-semibold">
+                              {new Date(pv.data).toLocaleDateString('pt-BR')}
+                            </span>
+                            <Badge variant="outline" className="ml-2 text-xs">
+                              {pv.tipoInvestidor}
+                            </Badge>
+                          </div>
+                          {pv.tipo.includes('PICO') ? (
+                            <TrendingUp className="h-5 w-5 text-green-600" />
+                          ) : (
+                            <TrendingDown className="h-5 w-5 text-red-600" />
+                          )}
+                        </div>
+                        <p className="text-sm mb-1">{pv.contexto}</p>
+                        {pv.diasAteProximo && (
+                          <p className="text-xs text-muted-foreground">
+                            Próximo em ~{pv.diasAteProximo} dias
+                          </p>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-8 text-muted-foreground">
+                    Nenhum pico ou vale significativo detectado
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Ciclos */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Calendar className="h-5 w-5 text-indigo-600" />
+                  Ciclos de Acumulação e Distribuição
+                </CardTitle>
+                <CardDescription>
+                  Períodos prolongados de comportamento consistente
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {analiseQuantica?.ciclos && analiseQuantica.ciclos.length > 0 ? (
+                  <div className="space-y-3">
+                    {analiseQuantica.ciclos.slice(0, 8).map((ciclo, idx) => (
+                      <div key={idx} className="p-4 rounded-lg border-2 bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-950 dark:to-purple-950">
+                        <div className="flex items-start justify-between mb-2">
+                          <div>
+                            <Badge variant="outline" className="mb-2">{ciclo.tipoInvestidor}</Badge>
+                            <h4 className="font-semibold">
+                              {ciclo.tipo === 'ACUMULACAO' ? '📈 Acumulação' : ciclo.tipo === 'DISTRIBUICAO' ? '📉 Distribuição' : '➡️ Lateral'}
+                            </h4>
+                            <p className="text-sm text-muted-foreground">
+                              {new Date(ciclo.dataInicio).toLocaleDateString('pt-BR')} a {new Date(ciclo.dataFim).toLocaleDateString('pt-BR')}
+                            </p>
+                          </div>
+                          <div className="text-right">
+                            <div className="text-xs text-muted-foreground">Duração</div>
+                            <div className="text-2xl font-bold">{ciclo.duracaoDias} dias</div>
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-3 gap-2 text-sm mt-3 pt-3 border-t">
+                          <div>
+                            <span className="text-muted-foreground">Fluxo Total:</span>
+                            <span className={`ml-2 font-semibold ${ciclo.fluxoTotal >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                              R$ {(ciclo.fluxoTotal / 1000).toFixed(2)}bi
+                            </span>
+                          </div>
+                          <div>
+                            <span className="text-muted-foreground">Consistência:</span>
+                            <span className="ml-2 font-semibold">{ciclo.consistencia.toFixed(0)}%</span>
+                          </div>
+                          <div>
+                            <span className="text-muted-foreground">Força:</span>
+                            <span className="ml-2 font-semibold">{ciclo.forca.toFixed(0)}%</span>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-8 text-muted-foreground">
+                    Nenhum ciclo prolongado identificado
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>

@@ -199,6 +199,57 @@ export const appRouter = router({
       const winfutData = await getWinfutCotacoesByUser(ctx.user.id);
       
       return detectarAlertasMovimento(fluxoData, winfutData);
+    }),
+    
+    // ANÁLISE QUÂNTICA AVANÇADA
+    getAnaliseQuantica: protectedProcedure.query(async ({ ctx }) => {
+      const { getB3FluxoDataByUser, getWinfutCotacoesByUser } = await import('./b3-helpers');
+      const { analiseQuanticaCompleta } = await import('./quantum-analytics');
+      
+      const fluxoData = await getB3FluxoDataByUser(ctx.user.id);
+      const winfutData = await getWinfutCotacoesByUser(ctx.user.id);
+      
+      return analiseQuanticaCompleta(fluxoData, winfutData);
+    }),
+    
+    getPontosInflexao: protectedProcedure.query(async ({ ctx }) => {
+      const { getB3FluxoDataByUser } = await import('./b3-helpers');
+      const { detectarPontosInflexao } = await import('./quantum-analytics');
+      
+      const fluxoData = await getB3FluxoDataByUser(ctx.user.id);
+      return detectarPontosInflexao(fluxoData);
+    }),
+    
+    getPicosVales: protectedProcedure.query(async ({ ctx }) => {
+      const { getB3FluxoDataByUser } = await import('./b3-helpers');
+      const { detectarPicosVales } = await import('./quantum-analytics');
+      
+      const fluxoData = await getB3FluxoDataByUser(ctx.user.id);
+      return detectarPicosVales(fluxoData);
+    }),
+    
+    getCiclos: protectedProcedure.query(async ({ ctx }) => {
+      const { getB3FluxoDataByUser } = await import('./b3-helpers');
+      const { identificarCiclos } = await import('./quantum-analytics');
+      
+      const fluxoData = await getB3FluxoDataByUser(ctx.user.id);
+      return identificarCiclos(fluxoData);
+    }),
+    
+    getMomentum: protectedProcedure.query(async ({ ctx }) => {
+      const { getB3FluxoDataByUser } = await import('./b3-helpers');
+      const { calcularMomentum } = await import('./quantum-analytics');
+      
+      const fluxoData = await getB3FluxoDataByUser(ctx.user.id);
+      return calcularMomentum(fluxoData);
+    }),
+    
+    getComparativoInvestidores: protectedProcedure.query(async ({ ctx }) => {
+      const { getB3FluxoDataByUser } = await import('./b3-helpers');
+      const { criarComparativoInvestidores } = await import('./quantum-analytics');
+      
+      const fluxoData = await getB3FluxoDataByUser(ctx.user.id);
+      return criarComparativoInvestidores(fluxoData);
     })
   }),
 });
